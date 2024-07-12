@@ -1,84 +1,37 @@
 package main
 
-import(
-    "fmt"
-    "math"
+import (
+	"fmt"
+	"math"
+
+	"github.com/JorgeMG117/DeepGo/nn"
 )
-
-type ActivationFunc func(float32) float32
-
-func Sigmoid(x float32) float32 {
-    return float32(1 / (1 + math.Exp(float64(-x))))
-}
-
-
-
-type Layer struct {
-    //input []float32
-    //output []float32
-    inputSize int
-    outputSize int 
-
-    weights []float32
-    bias float32
-    activationFunc ActivationFunc
-}
-
-func CreateLayer(inputSize int, outputSize int, actFunc ActivationFunc) *Layer {
-    weights := []float32 {1.45, -0.66}
-    return &Layer {
-        //input: make([]float32, 0, inputSize),
-        //output: make([]float32, 0, outputSize),
-        inputSize: inputSize,
-        outputSize: outputSize,
-        weights: weights,
-        bias: 0.0,
-        activationFunc: actFunc,
-    }
-
-}
-
-func (l *Layer) Predict(input []float32) []float32 {
-    return []float32{l.activationFunc(dot(input, l.weights) + l.bias)}
-}
-
-
-func dot(a, b []float32) float32 {
-    var res float32
-    for i := range a {
-        res += a[i] * b[i]
-    }
-    return res
-}
-
-type NN struct {
-    layers []*Layer
-}
-
-func (nn *NN) MakePrediction(input []float32) float32 {
-    for _, layer := range nn.layers {
-        input = layer.Predict(input)
-    }
-    return input[0]
-}
 
 
 func main() {
 
     // Read data
-    input := []float32{1.66, 1.56}
+    input := []float32{2, 1.5}
 
     // Create neural network
-    layer := CreateLayer(2, 1, Sigmoid)
+    layer1 := nn.CreateLayer(2, 1, nn.Sigmoid)
+    //layer2 := nn.CreateLayer(2, 1, nn.Identity)
 
-    nn := NN { 
-        layers: []*Layer{
-            layer,
+    nn := nn.NN { 
+        Layers: []*nn.Layer{
+            layer1,
+            //layer2,
         } }
+
+    nn.Train()
 
     res := nn.MakePrediction(input)
 
+    var target float32 = 0.0
+    mse := math.Sqrt(float64(res-target))
+
     fmt.Println(res)
+    fmt.Println(mse)
 
     // Train
 }
