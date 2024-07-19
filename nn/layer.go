@@ -1,6 +1,7 @@
 package nn
 
 import (
+	"fmt"
 	"math/rand"
 
 	"github.com/JorgeMG117/DeepGo/utils"
@@ -21,13 +22,14 @@ type Layer struct {
 func CreateLayer(inputSize int, outputSize int, actFunc ActivationFunc) *Layer {
 
     // Initialize the weights
-    weights := make([][]float32, outputSize)
+    weights := make([][]float32, inputSize)
     for i := range weights {
-        weights[i] = make([]float32, inputSize)
+        weights[i] = make([]float32, outputSize)
         for j := range weights[i] {
             weights[i][j] = rand.Float32()
         }
     }
+
 
     return &Layer {
         //input: make([]float32, 0, inputSize),
@@ -38,22 +40,33 @@ func CreateLayer(inputSize int, outputSize int, actFunc ActivationFunc) *Layer {
         bias: make([]float32,outputSize),
         activationFunc: actFunc,
 
-        x: make([][]float32, outputSize),
-        y: make([][]float32, outputSize),
+        //x: make([][]float32, outputSize),
+        //y: make([][]float32, outputSize),
     }
 
 }
 
 func (l *Layer) Predict(input [][]float32) [][]float32 {
     /*
-    output := make([]float32, l.outputSize)
-    for neuron := 0; neuron < l.outputSize; neuron++ {
-        output[neuron] = l.activationFunc(dot(input, l.weights[neuron]) + l.bias[neuron])
+    l.x = make([][]float32, len(input))
+    for i := range l.x {
+        l.x[i] = make([]float32, l.outputSize)
     }
     */
-    l.x , _ = utils.MultiplyMatrices(l.weights, input)
-    //l.y = l.activationFunc(l.x)
-    return l.x
+
+    x, err := utils.MultiplyMatrices(input, l.weights)
+
+    if err != nil { fmt.Println(err) }
+
+    l.x = x
+    //fmt.Println(l.x)
+    l.y = l.activationFunc.Apply(l.x)
+    //fmt.Println(l.y)
+    return l.y
+}
+
+func (l *Layer) ajf() {
+
 }
 
 

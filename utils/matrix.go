@@ -20,3 +20,155 @@ func MultiplyMatrices(a [][]float32, b [][]float32) ([][]float32, error) {
     }
     return result, nil
 }
+
+func MultiplyMatrixVector(matrix [][]float32, vector []float32) ([]float32, error) {
+    if len(matrix) == 0 || len(vector) == 0 {
+        return nil, fmt.Errorf("matrix or vector cannot be empty")
+    }
+    
+    // Check if all rows in the matrix have the same number of columns as the size of the vector
+    for _, row := range matrix {
+        if len(row) != len(vector) {
+            return nil, fmt.Errorf("the number of columns in the matrix must match the size of the vector")
+        }
+    }
+    
+    result := make([]float32, len(matrix))
+    
+    for i, row := range matrix {
+        for j, value := range row {
+            result[i] += value * vector[j]
+        }
+    }
+    
+    return result, nil
+}
+
+func TransposeMatrix(matrix [][]float32) [][]float32 {
+    if len(matrix) == 0 {
+        return nil // Return nil for empty input to avoid panics on indexing.
+    }
+
+    // Determine the number of columns in the first row assuming a non-jagged matrix.
+    numRows := len(matrix)
+    numCols := len(matrix[0])
+
+    // Create a new matrix with the dimensions swapped.
+    transposed := make([][]float32, numCols)
+    for i := range transposed {
+        transposed[i] = make([]float32, numRows)
+        for j := range transposed[i] {
+            transposed[i][j] = matrix[j][i]
+        }
+    }
+
+    return transposed
+}
+
+func FlattenMatrixToVector(matrix [][]float32) []float32 {
+	if len(matrix) == 0 {
+		return nil // Return nil if the matrix is empty.
+	}
+
+	// Initialize a slice to hold the flattened matrix
+	vector := make([]float32, len(matrix))
+
+	// Flatten the matrix
+	for i, row := range matrix {
+		if len(row) == 0 {
+			continue // Skip empty rows, though this should not happen in a properly formatted 500x1 matrix.
+		}
+		vector[i] = row[0] // Assume each row has exactly one element, since the matrix is 500x1.
+	}
+
+	return vector
+}
+
+func ReduceMatrixToOneColumn(matrix [][]float32) [][]float32 {
+    if len(matrix) == 0 || len(matrix[0]) == 0 {
+        return nil // Return nil for empty input to avoid panics on indexing.
+    }
+
+    // Initialize the resulting 500x1 matrix
+    result := make([][]float32, len(matrix))
+    for i := range result {
+        result[i] = make([]float32, 1) // Each row has one element
+    }
+
+    // Compute the average of each row
+    for i, row := range matrix {
+        sum := 0.0
+        for _, value := range row {
+            sum += float64(value)
+        }
+        result[i][0] = float32(sum / float64(len(row))) // Assuming all rows are non-empty and have equal length
+    }
+
+    return result
+}
+
+
+func MultiplyMatrixByScalar(matrix [][]float32, scalar float32) [][]float32 {
+	if len(matrix) == 0 || len(matrix[0]) == 0 {
+		return nil// Handle empty matrix or empty rows gracefully
+	}
+
+	for i := range matrix {
+		for j := range matrix[i] {
+			matrix[i][j] *= scalar
+		}
+	}
+
+    return matrix
+}
+
+func ColumnMeans(matrix [][]float32) [][]float32 {
+	if len(matrix) == 0 || len(matrix[0]) == 0 {
+		return nil // Handle empty matrix or columns
+	}
+
+	numCols := len(matrix[0])
+	numRows := len(matrix)
+
+	// Initialize a result matrix with 1 row and the same number of columns as the input matrix
+	result := make([][]float32, 1)
+	result[0] = make([]float32, numCols)
+
+	// Sum values in each column
+	for i := 0; i < numRows; i++ {
+		for j := 0; j < numCols; j++ {
+			result[0][j] += matrix[i][j]
+		}
+	}
+
+	// Divide each sum by the number of rows to get the mean
+	for j := 0; j < numCols; j++ {
+		result[0][j] /= float32(numRows)
+	}
+
+	return result
+}
+
+func SubstractWeights(weigths [][]float32, dError [][]float32) [][]float32 {
+	if len(weigths) == 0 || len(weigths[0]) == 0 {
+		return nil // Handle empty matrix or columns
+	}
+
+	numCols := len(weigths[0]) //1
+	numRows := len(weigths)//2
+    //fmt.Println(numCols)
+    //fmt.Println(numRows)
+
+    //fmt.Println(dError)
+	for i := 0; i < numCols; i++ {
+        eVal := dError[0][i]
+		for j := 0; j < numRows; j++ {
+            //fmt.Println(weigths[j][i])// 00 01
+            //fmt.Println(eVal)
+            weigths[j][i] -= eVal 
+		}
+	}
+
+    return weigths
+}
+

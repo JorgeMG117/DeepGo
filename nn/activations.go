@@ -4,20 +4,35 @@ import (
     "math"
 )
 
-type ActivationFunc func(float32) float32
+type ActivationFunc interface {
+    Apply(x [][]float32) [][]float32
+    derivApply(x [][]float32) [][]float32
+}
 
-func Identity(x float32) float32 {
+type Identity struct {}
+
+func (a Identity) Apply(x [][]float32) [][]float32 {
     return x
 }
 
-func Sigmoid(x float32) float32 {
-    return float32(1 / (1 + math.Exp(float64(-x))))
+
+type Sigmoid struct {}
+
+func (a Sigmoid) Apply(x [][]float32) [][]float32 {
+    for i := 0; i < len(x); i++  {
+        for j := 0; j < len(x[0]); j++  {
+            x[i][j] = float32(1 / (1 + math.Exp(float64(-x[i][j]))))
+        }
+    }
+    return x
 }
 
-func sigmoidDerivative1(x float32) float32 {
-    return 0.0
+func (a Sigmoid) derivApply(x [][]float32) [][]float32 {
+    return x
 }
 
-func Relu(x float32) float32 {
+/*
+func Relu(x [][]float32) [][]float32 {
     return float32(math.Max(0.0, float64(x)))
 }
+*/

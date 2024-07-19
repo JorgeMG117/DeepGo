@@ -31,9 +31,12 @@ func testNN1() (*data.Data, *nn.NN) {
 
     nn := nn.NN { 
         Layers: []*nn.Layer{
-            nn.CreateLayer(2, 2, nn.Relu),
-            nn.CreateLayer(2, 1, nn.Sigmoid),
-        } }
+            nn.CreateLayer(2, 2, nn.Sigmoid{}),
+            nn.CreateLayer(2, 1, nn.Sigmoid{}),
+        },
+        Lr: 0.1,
+        LossFunction: nn.MSELoss{},
+    }
 
     return &aggData, &nn
 }
@@ -86,11 +89,26 @@ func circle() (*data.Data, *nn.NN) {
         //fmt.Println(data.Inputs[index][0], data.Targets[index])
 	}
 
+    /*
     nn := nn.NN { 
         Layers: []*nn.Layer{
-            nn.CreateLayer(2, 2, nn.Relu),
-            nn.CreateLayer(2, 1, nn.Sigmoid),
-        } }
+            nn.CreateLayer(2, 2, nn.Sigmoid{}),
+            nn.CreateLayer(2, 4, nn.Sigmoid{}),
+            nn.CreateLayer(4, 8, nn.Sigmoid{}),
+            nn.CreateLayer(8, 1, nn.Sigmoid{}),
+        },
+        Lr: 0.1,
+        LossFunction: nn.MSELoss{},
+    }
+    */
+    nn := nn.NN { 
+        Layers: []*nn.Layer{
+            nn.CreateLayer(2, 2, nn.Sigmoid{}),
+            nn.CreateLayer(2, 1, nn.Sigmoid{}),
+        },
+        Lr: 0.1,
+        LossFunction: nn.MSELoss{},
+    }
     
     return &data, &nn 
 }
@@ -109,6 +127,11 @@ func main() {
 
     // Train
     nn.Train(data.Inputs, data.Targets)
+
+    /*
+    for iter := 0; iter <= 100; iter++ {
+        pY := nn.Train(data.Inputs, data.Targets)
+    }*/
 
     /*
     res := nn.MakePrediction(input)
