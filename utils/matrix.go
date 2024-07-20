@@ -172,3 +172,25 @@ func SubstractWeights(weigths [][]float32, dError [][]float32) [][]float32 {
     return weigths
 }
 
+
+func ElementWiseMultiply(matrix1, matrix2 [][]float32) ([][]float32, error) {
+	// Check if both matrices have the same dimensions
+	if len(matrix1) == 0 || len(matrix2) == 0 || len(matrix1) != len(matrix2) || len(matrix1[0]) != len(matrix2[0]) {
+		return nil, fmt.Errorf("matrices must have the same dimensions")
+	}
+
+	// Initialize the result matrix
+	result := make([][]float32, len(matrix1))
+	for i := range result {
+		result[i] = make([]float32, len(matrix1[0]))
+	}
+
+	// Perform element-wise multiplication
+	for i := range matrix1 {
+		for j := range matrix1[0] {
+			result[i][j] = matrix1[i][j] * matrix2[i][j]
+		}
+	}
+
+	return result, nil
+}
