@@ -92,12 +92,12 @@ func circle() (*data.Data, *nn.NN) {
 
     nn := nn.NN { 
         Layers: []*nn.Layer{
-            nn.CreateLayer(2, 2, nn.Sigmoid{}),
+            //nn.CreateLayer(2, 2, nn.Sigmoid{}),
             nn.CreateLayer(2, 4, nn.Sigmoid{}),
             nn.CreateLayer(4, 8, nn.Sigmoid{}),
             nn.CreateLayer(8, 1, nn.Sigmoid{}),
         },
-        Lr: 0.1,
+        Lr: 0.01,
         LossFunction: nn.MSELoss{},
     }
     
@@ -131,9 +131,9 @@ func main() {
     plot.PlotData(X, "trainData.png")
 
     // Train
-    train_steps := 1000
+    train_steps := 3000 
     
-    loss := make([]float32, train_steps)
+    loss := make([]float32, 0, train_steps)
 
     for iter := 0; iter <= train_steps; iter++ {
 
@@ -142,12 +142,18 @@ func main() {
         if iter % 25 != 0 { continue }
 
         loss = append(loss, nn.LossFunction.Apply(utils.FlattenMatrixToVector(pY), X.Targets))
-        fmt.Println("Loss: ", loss)
-        fmt.Println("pY: ", pY)
+        //fmt.Println("Loss: ", loss)
+        //fmt.Println("pY: ", pY)
 
-        _x0 := utils.Linspace(-1.5, 1.5, 10)
-        _x1 := utils.Linspace(-1.5, 1.5, 10)
-        var _Y [10][10]float32
+        if iter == 1 { 
+            return 
+        }
+
+        //numData := 30
+        const numData int = 50 
+        _x0 := utils.Linspace(-1.5, 1.5, numData)
+        _x1 := utils.Linspace(-1.5, 1.5, numData)
+        var _Y [numData][numData]float32
         //data.CreateData()
 
         predictions := data.Data {
@@ -169,27 +175,13 @@ func main() {
 
 
             }
-            //fmt.Println(predictions)
-            //return
         }
 
         iterS := fmt.Sprint(iter)
         plot.PlotPredictions(X, &predictions, "predictedData" + iterS + ".png")
 
-
-
-
-
     }
 
-    /*
-    res := nn.MakePrediction(input)
-
-    var target float32 = 0.0
-    mse := math.Sqrt(float64(res-target))
-
-    fmt.Println(res)
-    fmt.Println(mse)
-    */
-
+    fmt.Println("Loss: ", loss)
+    plot.PlotLost(loss, "loss.png")
 }

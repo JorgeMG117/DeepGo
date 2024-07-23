@@ -149,27 +149,53 @@ func ColumnMeans(matrix [][]float32) [][]float32 {
 	return result
 }
 
-func SubstractWeights(weigths [][]float32, dError [][]float32) [][]float32 {
-	if len(weigths) == 0 || len(weigths[0]) == 0 {
+
+func SubstractBias(bias []float32, dError [][]float32) []float32 {
+	if len(dError) == 0 || len(dError[0]) == 0 {
 		return nil // Handle empty matrix or columns
 	}
 
-	numCols := len(weigths[0]) //1
-	numRows := len(weigths)//2
-    //fmt.Println(numCols)
-    //fmt.Println(numRows)
+	for i := 0; i < len(bias); i++ {
+        bias[i] -= dError[0][i]
+	}
+
+    return bias
+}
+
+func SubstractSameSize(x1 [][]float32, x2 [][]float32) [][]float32 {
+
+	numCols := len(x1[0]) //1
+	numRows := len(x1)//2
+
+	result := make([][]float32, numRows)
 
     //fmt.Println(dError)
-	for i := 0; i < numCols; i++ {
-        eVal := dError[0][i]
-		for j := 0; j < numRows; j++ {
-            //fmt.Println(weigths[j][i])// 00 01
-            //fmt.Println(eVal)
-            weigths[j][i] -= eVal 
+	for i := 0; i < numRows; i++ {
+	    result[i] = make([]float32, numCols)
+		for j := 0; j < numCols; j++ {
+            result[i][j] = x1[i][j] - x2[i][j]
 		}
 	}
 
-    return weigths
+    return result 
+}
+
+func SumBias(x [][]float32, bias []float32) [][]float32 {
+    //fmt.Println(bias)
+	if len(x) == 0 || len(x[0]) == 0 {
+		return nil // Handle empty matrix or columns
+	}
+
+	numCols := len(x[0])
+	numRows := len(x)
+
+	for i := 0; i < numRows; i++ {
+		for j := 0; j < numCols; j++ {
+            x[i][j] += bias[j] 
+		}
+	}
+
+    return x 
 }
 
 

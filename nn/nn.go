@@ -23,54 +23,79 @@ func (nn *NN) MakePrediction(input [][]float32) [][]float32 {
     return input 
 }
 
-func (nn *NN) backpropagation(predictions [][]float32, target []float32) {
-
+func (nn *NN) backpropagation(input [][]float32, target []float32) {
+    var dE_dY [][]float32
+    var dE_dX [][]float32
     var _dE_dX [][]float32
     var dE_dW [][]float32
+    var err error
+    /*
+        Example
+    Input (500, 2) (n, p)
+    NN
+        (2, 4)
+        (4, 8)
+        (8, 1)
+    */
+
     for layer := len(nn.Layers)-1; layer >= 0; layer-- {
-        //fmt.Println("LAYER: ", layer)
+        fmt.Println("LAYER: ", layer)
         if layer == len(nn.Layers)-1 {
             // 500 1
             //fmt.Println("predictions size: ", len(predictions), len(predictions[0]))
             //fmt.Println("target size: ", len(target))
-            dE_dY := nn.LossFunction.derivApply(predictions, target) 
+            dE_dY = nn.LossFunction.derivApply(nn.Layers[layer].y, target)
+            fmt.Println("dE_dY: ", len(dE_dY), len(dE_dY[0]))
 
-            // Efect of each unit in error
-            //500 1
-            dE_dX, err := utils.ElementWiseMultiply(dE_dY, nn.Layers[layer].activationFunc.derivApply(predictions)) 
-            if err != nil { fmt.Println(err) }
-            _dE_dX = dE_dX
-
-            // 1 500 * 500 1
-            dE_dW, err = utils.MultiplyMatrices(utils.TransposeMatrix(predictions), dE_dX) 
-            if err != nil { fmt.Println(err) }
         } else {
             // 500 1 * 1 8 -> 500 8
-            // 500 1 * 4 8 ERROR
+            // 500 8 * 8 4 -> 500 4
             wT := utils.TransposeMatrix(nn.Layers[layer+1].weights)
             //fmt.Println("weights size: ", len(wT), len(wT[0]))
             //fmt.Println("_dedx size: ", len(_dE_dX), len(_dE_dX[0]))
-            dE_dY, err := utils.MultiplyMatrices(_dE_dX, wT) 
+            dE_dY, err = utils.MultiplyMatrices(_dE_dX, wT)
             if err != nil { fmt.Println(err) }
-
-            // 500 8 * 500 8
-            // 500 4 * 500 4
-            //fmt.Println("y size: ", len(nn.Layers[layer].y), len(nn.Layers[layer].y[0]))
-            //fmt.Println("dedy size: ", len(dE_dY), len(dE_dY[0]))
-            dE_dX, err := utils.ElementWiseMultiply(dE_dY, nn.Layers[layer].activationFunc.derivApply(nn.Layers[layer].y)) 
-            if err != nil { fmt.Println(err) }
-            _dE_dX = dE_dX
-
-            // 500 8 * 500 8
-            dE_dW, err = utils.MultiplyMatrices(utils.TransposeMatrix(nn.Layers[layer].y), dE_dX) 
-            if err != nil { fmt.Println(err) }
+            fmt.Println("dE_dY: ", len(dE_dY), len(dE_dY[0]))
         }
+
+        // Efect of each unit in error
+        //500 1
+        //500 8
+        //500 4
+        dE_dX, err = utils.ElementWiseMultiply(dE_dY, nn.Layers[layer].activationFunc.derivApply(nn.Layers[layer].y)) 
+        if err != nil { fmt.Println(err) }
+        fmt.Println("dE_dX: ", len(dE_dX), len(dE_dX[0]))
+        _dE_dX = dE_dX
+
+        // 8 500 * 500 1 -> 8 1
+        // 4 500 * 500 8 -> 4 8
+        // 2 500 * 500 4 -> 2 4
+        var aux [][]float32
+        if layer == 0 {
+            aux = input 
+        } else {
+            aux = nn.Layers[layer-1].y
+        }
+        dE_dW, err = utils.MultiplyMatrices(utils.TransposeMatrix(aux), dE_dX) 
+        if err != nil { fmt.Println(err) }
+        fmt.Println("dE_dW: ", len(dE_dW), len(dE_dW[0]))
 
         //fmt.Println("Weight size: ", len(nn.Layers[layer].weights), len(nn.Layers[layer].weights[0]))
         //fmt.Println("dE_dW size: ", len(dE_dW), len(dE_dW[0]))
         //fmt.Println(nn.Layers[layer].weights)
         // 2 1 - 500 1
-        nn.Layers[layer].weights = utils.SubstractWeights(nn.Layers[layer].weights, utils.ColumnMeans(utils.MultiplyMatrixByScalar(dE_dW, nn.Lr)))
+        fmt.Println("Pre weights: ", nn.Layers[layer].weights)
+        fmt.Println("Pre bias: ", nn.Layers[layer].bias)
+        w := utils.MultiplyMatrixByScalar(dE_dW, nn.Lr)
+        b := utils.MultiplyMatrixByScalar(utils.ColumnMeans(dE_dX), nn.Lr)
+        fmt.Println("weight: ", w)
+        fmt.Println("bias: ", b)
+        nn.Layers[layer].weights = utils.SubstractSameSize(nn.Layers[layer].weights, w)
+        nn.Layers[layer].bias = utils.SubstractBias(nn.Layers[layer].bias, b)
+        //nn.Layers[layer].weights = utils.SubstractSameSize(nn.Layers[layer].weights, utils.MultiplyMatrixByScalar(dE_dW, nn.Lr))
+        //nn.Layers[layer].bias = utils.SubstractBias(nn.Layers[layer].bias, utils.MultiplyMatrixByScalar(utils.ColumnMeans(dE_dX), nn.Lr))
+        fmt.Println("Post weights: ", nn.Layers[layer].weights)
+        fmt.Println("Post bias: ", nn.Layers[layer].bias)
     }
 }
 
@@ -120,14 +145,14 @@ func (nn *NN) Train(input [][]float32, target []float32) [][]float32 {
 
         X[500][1]
     */
-    fmt.Println("Train data structure: ", len(input), len(input[0]))
+    //fmt.Println("Train data structure: ", len(input), len(input[0]))
 
     // Forward pass
     predictions := nn.MakePrediction(input)
 
     // Backward pass
     // For each neuron in layer compute ∂E/∂y
-    nn.backpropagation(predictions, target)
+    nn.backpropagation(input, target)
 
     return predictions
 }

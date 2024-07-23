@@ -154,3 +154,29 @@ func PlotData(data *data.Data, file string) {
 	plt.Save(4*vg.Inch, 4*vg.Inch, file)
     fmt.Println("Data saved in: ", file)
 }
+
+func PlotLost(loss []float32, file string) {
+    p := plot.New()
+
+    p.Title.Text = "Loss Plot"
+	p.X.Label.Text = "Iteration"
+	p.Y.Label.Text = "Loss"
+
+    pts := make(plotter.XYs, len(loss))
+	for i := range pts {
+        pts[i].X = float64(i)
+		pts[i].Y = float64(loss[i])
+	}
+
+    err := plotutil.AddLines(p, "Loss", pts)
+	if err != nil {
+		panic(err)
+	}
+
+	// Save the plot to a PNG file.
+	if err := p.Save(4*vg.Inch, 4*vg.Inch, file); err != nil {
+		panic(err)
+	}
+    fmt.Println("Loss saved in: ", file)
+
+}

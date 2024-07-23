@@ -1,9 +1,5 @@
 package nn
 
-import (
-	"math"
-)
-
 //cost function, loss function
 
 type LossFunct interface {
@@ -14,32 +10,32 @@ type LossFunct interface {
 type MSELoss struct {}
 
 func (l MSELoss) Apply(output []float32, expected []float32) float32 {
-    var res float64 = 0.0
-    for i := 0; i < len(output); i++ {
-        res += math.Pow(float64(output[i]) - float64(expected[i]), 2)
-    }
+    if len(output) != len(expected) {
+		panic("output and expected must have the same length")
+	}
 
-    return float32(res/2)
+	var res float64
+	for i := 0; i < len(output); i++ {
+		diff := float64(output[i]) - float64(expected[i])
+		res += diff * diff
+	}
+
+	return float32(res / float64(len(output)))
 }
 
 func (l MSELoss) derivApply(output [][]float32, expected []float32) [][]float32 {
-    res := make([][]float32, len(output))
+    if len(output) != len(expected) {
+		panic("output and expected must have the same length")
+	}
 
-    chEnd := make([]chan float32, len(output))
-    for i := range chEnd {
-        chEnd[i] = make(chan float32)
-    }
+	res := make([][]float32, len(output))
+	for i := 0; i < len(output); i++ {
+		if len(output[i]) != 1 {
+			panic("output must be a matrix with single-column rows")
+		}
+		res[i] = make([]float32, 1)
+		res[i][0] = output[i][0] - expected[i]
+	}
 
-    for i := 0; i < len(output); i++ {
-        go func(idx int) {
-            chEnd[idx] <- output[idx][0] - expected[idx]
-        }(i)
-    }
-
-    for i := 0; i < len(output); i++ {
-        res[i] = make([]float32, 1)
-        res[i][0] = <-chEnd[i]
-    }
-
-    return res
+	return res
 }

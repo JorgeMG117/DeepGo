@@ -28,6 +28,11 @@ func (a Sigmoid) Apply(x [][]float32) [][]float32 {
 }
 
 func (a Sigmoid) derivApply(x [][]float32) [][]float32 {
+    for i := range x {
+        for j := range x[i] {
+            x[i][j] = x[i][j] * (1 - x[i][j])
+        }
+    }
     return x
 }
 

@@ -21,13 +21,18 @@ type Layer struct {
 
 func CreateLayer(inputSize int, outputSize int, actFunc ActivationFunc) *Layer {
 
-    // Initialize the weights
+    // Initialize the weights and bias
     weights := make([][]float32, inputSize)
     for i := range weights {
         weights[i] = make([]float32, outputSize)
         for j := range weights[i] {
-            weights[i][j] = rand.Float32()
+            weights[i][j] = rand.Float32()*2-1
         }
+    }
+
+    bias := make([]float32, outputSize)
+    for i := range bias {
+        bias[i] = rand.Float32()*2-1
     }
 
 
@@ -37,7 +42,7 @@ func CreateLayer(inputSize int, outputSize int, actFunc ActivationFunc) *Layer {
         inputSize: inputSize,
         outputSize: outputSize,
         weights: weights,
-        bias: make([]float32,outputSize),
+        bias: bias,
         activationFunc: actFunc,
 
         //x: make([][]float32, outputSize),
@@ -47,26 +52,16 @@ func CreateLayer(inputSize int, outputSize int, actFunc ActivationFunc) *Layer {
 }
 
 func (l *Layer) Predict(input [][]float32) [][]float32 {
-    /*
-    l.x = make([][]float32, len(input))
-    for i := range l.x {
-        l.x[i] = make([]float32, l.outputSize)
-    }
-    */
-
     x, err := utils.MultiplyMatrices(input, l.weights)
 
     if err != nil { fmt.Println(err) }
 
-    l.x = x
+    l.x = utils.SumBias(x, l.bias)
     //fmt.Println(l.x)
     l.y = l.activationFunc.Apply(l.x)
     //fmt.Println(l.y)
     return l.y
 }
 
-func (l *Layer) ajf() {
-
-}
 
 
