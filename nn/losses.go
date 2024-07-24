@@ -4,7 +4,7 @@ package nn
 
 type LossFunct interface {
     Apply(output []float32, expected []float32) float32
-    derivApply(output [][]float32, expected []float32) [][]float32
+    DerivApply(output [][]float32, expected []float32) [][]float32
 }
 
 type MSELoss struct {}
@@ -23,7 +23,7 @@ func (l MSELoss) Apply(output []float32, expected []float32) float32 {
 	return float32(res / float64(len(output)))
 }
 
-func (l MSELoss) derivApply(output [][]float32, expected []float32) [][]float32 {
+func (l MSELoss) DerivApply(output [][]float32, expected []float32) [][]float32 {
     if len(output) != len(expected) {
 		panic("output and expected must have the same length")
 	}
@@ -34,6 +34,7 @@ func (l MSELoss) derivApply(output [][]float32, expected []float32) [][]float32 
 			panic("output must be a matrix with single-column rows")
 		}
 		res[i] = make([]float32, 1)
+		//res[i][0] = 2 * (output[i][0] - expected[i])
 		res[i][0] = output[i][0] - expected[i]
 	}
 

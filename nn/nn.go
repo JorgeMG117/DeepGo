@@ -44,7 +44,7 @@ func (nn *NN) backpropagation(input [][]float32, target []float32) {
             // 500 1
             //fmt.Println("predictions size: ", len(predictions), len(predictions[0]))
             //fmt.Println("target size: ", len(target))
-            dE_dY = nn.LossFunction.derivApply(nn.Layers[layer].y, target)
+            dE_dY = nn.LossFunction.DerivApply(nn.Layers[layer].y, target)
             fmt.Println("dE_dY: ", len(dE_dY), len(dE_dY[0]))
 
         } else {
@@ -62,7 +62,7 @@ func (nn *NN) backpropagation(input [][]float32, target []float32) {
         //500 1
         //500 8
         //500 4
-        dE_dX, err = utils.ElementWiseMultiply(dE_dY, nn.Layers[layer].activationFunc.derivApply(nn.Layers[layer].y)) 
+        dE_dX, err = utils.ElementWiseMultiply(dE_dY, nn.Layers[layer].activationFunc.DerivApply(nn.Layers[layer].y)) 
         if err != nil { fmt.Println(err) }
         fmt.Println("dE_dX: ", len(dE_dX), len(dE_dX[0]))
         _dE_dX = dE_dX

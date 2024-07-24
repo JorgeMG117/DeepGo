@@ -1,17 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"strconv"
-	//"math"
-	"encoding/csv"
-	"log"
-	"os"
-
 	"github.com/JorgeMG117/DeepGo/data"
+	"github.com/JorgeMG117/DeepGo/datasets"
 	"github.com/JorgeMG117/DeepGo/nn"
 	"github.com/JorgeMG117/DeepGo/plot"
 	"github.com/JorgeMG117/DeepGo/utils"
+    "fmt"
 )
 
 func testNN1() (*data.Data, *nn.NN) {
@@ -42,67 +37,6 @@ func testNN1() (*data.Data, *nn.NN) {
     return &aggData, &nn
 }
 
-func circle() (*data.Data, *nn.NN) {
-    // Read data
-    file, err := os.Open("datasets/circle_data.csv")
-	if err != nil {
-		log.Fatal("Error opening the CSV file:", err)
-	}
-	defer file.Close()
-
-    reader := csv.NewReader(file)
-	reader.FieldsPerRecord = -1 // Allows variable number of fields per record
-
-	// Read and print all records
-	records, err := reader.ReadAll()
-	if err != nil {
-		log.Fatal("Error reading CSV records:", err)
-	}
-
-	// Iterate over records
-    var data data.Data
-    data.Targets = make([]float32, len(records)-1)
-    data.Inputs = make([][]float32, len(records)-1)
-
-    for index, record := range records[1:] {
-    
-        //fmt.Println("Record", index, ":", record)
-
-        x1, err := strconv.ParseFloat(record[0], 64)
-        if err != nil {
-            log.Fatalf("Error parsing X1 on record %d: %v", index, err)
-        }
-        x2, err := strconv.ParseFloat(record[1], 64)
-        if err != nil {
-            log.Fatalf("Error parsing X2 on record %d: %v", index, err)
-        }
-        label, err := strconv.Atoi(record[2])
-        if err != nil {
-            log.Fatalf("Error parsing Label on record %d: %v", index, err)
-        }
-
-
-        data.Inputs[index] = make([]float32, 2)
-        data.Inputs[index][0] = float32(x1)
-        data.Inputs[index][1] = float32(x2)
-        data.Targets[index] = float32(label)
-
-        //fmt.Println(data.Inputs[index][0], data.Targets[index])
-	}
-
-    nn := nn.NN { 
-        Layers: []*nn.Layer{
-            //nn.CreateLayer(2, 2, nn.Sigmoid{}),
-            nn.CreateLayer(2, 4, nn.Sigmoid{}),
-            nn.CreateLayer(4, 8, nn.Sigmoid{}),
-            nn.CreateLayer(8, 1, nn.Sigmoid{}),
-        },
-        Lr: 0.01,
-        LossFunction: nn.MSELoss{},
-    }
-    
-    return &data, &nn 
-}
 
 func mnist() {
 }
@@ -125,13 +59,24 @@ func main() {
     */
 
     // Read data
+    X := datasets.Circle()
+
     // Create neural network
-    X, nn := circle()
+    nn := nn.NN { 
+        Layers: []*nn.Layer{
+            //nn.CreateLayer(2, 2, nn.Sigmoid{}),
+            nn.CreateLayer(2, 4, nn.Sigmoid{}),
+            nn.CreateLayer(4, 1, nn.Sigmoid{}),
+            //nn.CreateLayer(8, 1, nn.Sigmoid{}),
+        },
+        Lr: 0.01,
+        LossFunction: nn.MSELoss{},
+    }
 
     plot.PlotData(X, "trainData.png")
 
     // Train
-    train_steps := 3000 
+    train_steps := 5000 
     
     loss := make([]float32, 0, train_steps)
 
@@ -142,14 +87,15 @@ func main() {
         if iter % 25 != 0 { continue }
 
         loss = append(loss, nn.LossFunction.Apply(utils.FlattenMatrixToVector(pY), X.Targets))
-        //fmt.Println("Loss: ", loss)
+
+        fmt.Println("Loss: ", loss)
         //fmt.Println("pY: ", pY)
 
         if iter == 1 { 
             return 
         }
 
-        //numData := 30
+        /*
         const numData int = 50 
         _x0 := utils.Linspace(-1.5, 1.5, numData)
         _x1 := utils.Linspace(-1.5, 1.5, numData)
@@ -179,8 +125,38 @@ func main() {
 
         iterS := fmt.Sprint(iter)
         plot.PlotPredictions(X, &predictions, "predictedData" + iterS + ".png")
+        */
 
     }
+
+    const numData int = 100 
+    _x0 := utils.Linspace(-1.5, 1.5, numData)
+    _x1 := utils.Linspace(-1.5, 1.5, numData)
+    var _Y [numData][numData]float32
+    //data.CreateData()
+
+    predictions := data.Data {
+        Inputs:  make([][]float32, 0, 50*50),
+        Targets: make([]float32, 0, 50*50),
+    }
+
+    for i0, x0 := range _x0 {
+        for i1, x1 := range _x1 {
+            input := make([][]float32, 1)
+            input[0] = make([]float32, 2) 
+            input[0][0] = x0 
+            input[0][1] = x1
+
+            _Y[i0][i1] = nn.MakePrediction(input)[0][0]
+
+            predictions.Inputs = append(predictions.Inputs, input[0])
+            predictions.Targets = append(predictions.Targets, _Y[i0][i1])
+
+
+        }
+    }
+
+    plot.PlotPredictions(X, &predictions, "predictedData.png")
 
     fmt.Println("Loss: ", loss)
     plot.PlotLost(loss, "loss.png")

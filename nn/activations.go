@@ -6,7 +6,7 @@ import (
 
 type ActivationFunc interface {
     Apply(x [][]float32) [][]float32
-    derivApply(x [][]float32) [][]float32
+    DerivApply(x [][]float32) [][]float32
 }
 
 type Identity struct {}
@@ -19,21 +19,27 @@ func (a Identity) Apply(x [][]float32) [][]float32 {
 type Sigmoid struct {}
 
 func (a Sigmoid) Apply(x [][]float32) [][]float32 {
+    res := make([][]float32, len(x))
+
     for i := 0; i < len(x); i++  {
+        res[i] = make([]float32, len(x[0]))
         for j := 0; j < len(x[0]); j++  {
-            x[i][j] = float32(1 / (1 + math.Exp(float64(-x[i][j]))))
+            res[i][j] = float32(1 / (1 + math.Exp(float64(-x[i][j]))))
         }
     }
-    return x
+    return res
 }
 
-func (a Sigmoid) derivApply(x [][]float32) [][]float32 {
+func (a Sigmoid) DerivApply(x [][]float32) [][]float32 {
+    res := make([][]float32, len(x))
+
     for i := range x {
+        res[i] = make([]float32, len(x[i]))
         for j := range x[i] {
-            x[i][j] = x[i][j] * (1 - x[i][j])
+            res[i][j] = x[i][j] * (1 - x[i][j])
         }
     }
-    return x
+    return res
 }
 
 /*

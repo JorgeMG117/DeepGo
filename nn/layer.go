@@ -64,4 +64,20 @@ func (l *Layer) Predict(input [][]float32) [][]float32 {
 }
 
 
+func (l *Layer) SetWeightsAndBiases(W [][]float32, b []float32) {
+    l.weights = W
+    l.bias = b
+}
 
+func (l *Layer) PrintWeightsAndBiases() {
+    fmt.Println("Weights:")
+    for _, row := range l.weights {
+        fmt.Println(row)
+    }
+    fmt.Println("Biases:")
+    fmt.Println(l.bias)
+}
+
+func (l *Layer) GetWeightsAndBiases() ([][]float32, []float32) {
+    return l.weights, l.bias
+}
