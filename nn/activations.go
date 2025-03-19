@@ -76,3 +76,36 @@ func (a Relu) DerivApply(x [][]float32) [][]float32 {
 
 	return res
 }
+
+type Softmax struct{}
+
+func (a Softmax) Apply(x [][]float32) [][]float32 {
+	res := make([][]float32, len(x))
+
+	for i := range x {
+		res[i] = make([]float32, len(x[i]))
+		var sum float32
+		for j := range x[i] {
+			res[i][j] = float32(math.Exp(float64(x[i][j])))
+			sum += res[i][j]
+		}
+		for j := range x[i] {
+			res[i][j] /= sum
+		}
+	}
+
+	return res
+}
+
+func (a Softmax) DerivApply(x [][]float32) [][]float32 {
+	res := make([][]float32, len(x))
+
+	for i := range x {
+		res[i] = make([]float32, len(x[i]))
+		for j := range x[i] {
+			res[i][j] = x[i][j] * (1 - x[i][j])
+		}
+	}
+
+	return res
+}

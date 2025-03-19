@@ -64,7 +64,7 @@ func ReadMNISTImages(filename string) ([][]float32, error) {
 }
 
 // ReadMNISTLabels reads the MNIST labels from the given file
-func ReadMNISTLabels(filename string) ([]uint8, error) {
+func ReadMNISTLabels(filename string) ([]float32, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -89,15 +89,20 @@ func ReadMNISTLabels(filename string) ([]uint8, error) {
 		return nil, fmt.Errorf("invalid magic number: %d", magic)
 	}
 
-	labels := make([]uint8, numLabels)
-	if err := binary.Read(reader, binary.BigEndian, &labels); err != nil {
+	uint8Labels := make([]uint8, numLabels)
+	if err := binary.Read(reader, binary.BigEndian, &uint8Labels); err != nil {
 		return nil, err
+	}
+
+	labels := make([]float32, numLabels)
+	for i, label := range uint8Labels {
+		labels[i] = float32(label)
 	}
 
 	return labels, nil
 }
 
-func MNIST() ([][]float32, []uint8, [][]float32, []uint8) {
+func MNIST() ([][]float32, []float32, [][]float32, []float32) {
 	dataDir := "datasets/MNIST/raw"
 	trainImagesPath := filepath.Join(dataDir, trainImagesFile)
 	trainLabelsPath := filepath.Join(dataDir, trainLabelsFile)
@@ -131,7 +136,7 @@ func MNIST() ([][]float32, []uint8, [][]float32, []uint8) {
 	fmt.Printf("Train Images: %d, Train Labels: %d\n", len(trainImages), len(trainLabels))
 	fmt.Printf("Test Images: %d, Test Labels: %d\n", len(testImages), len(testLabels))
 
-	fmt.Println("Train Image Shape:", len(trainImages[0]), len(trainImages[0]))
+	fmt.Println("Train Image Shape:", len(trainImages[0]))
 
 	return trainImages, trainLabels, testImages, testLabels
 }
